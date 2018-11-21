@@ -25,16 +25,20 @@ def __download_file(bucket_name, pattern):
     if regex.match(s3_object.key):
       s3_file = tempfile.TemporaryFile()
       bucket.download_fileobj(s3_object.key, s3_file)
+      s3_file.seek(0)
       return s3_file
 
   raise S3FileNotFound(pattern)
 
-class BucketNotFound(Exception):
+class S3Exception(Exception):
+  pass
+
+class BucketNotFound(S3Exception):
   def __init__(self, bucket):
     self.message = "Bucket {0} does not exists".format(bucket)
     self.bucket = bucket
 
-class S3FileNotFound(Exception):
+class S3FileNotFound(S3Exception):
   def __init__(self, pattern):
     self.message = "No file were found matching the pattern '{0}'".format(pattern)
     self.pattern = pattern
