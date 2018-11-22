@@ -38,7 +38,7 @@ def ca_sign(args):
     key_file = s3.download_key_file(bucket, cluster)
     cert_file = s3.download_cert_file(bucket, cluster)
     cert = certs.sign_req(cert_file, key_file, req_file, cluster)
-    print(cert.decode('utf8'))
+    print(cert.read().decode('utf8'))
   except (certs.InvalidCertificateRequest, s3.BucketNotFound, s3.S3FileNotFound) as e:
     raise e
 
