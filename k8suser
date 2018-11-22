@@ -14,8 +14,9 @@ import certs
 def req(args):
   username = args.USERNAME
 
-  req  = certs.create_req(username)
-  print(req.decode('utf8'))
+  key, req = certs.create_req(username)
+  print(req.read().decode('utf8'))
+  print(key.read().decode('utf8'))
 
 def ca(args):
   ca_parser.print_help()

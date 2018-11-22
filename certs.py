@@ -46,10 +46,15 @@ def create_req(username):
   req.get_subject().commonName = username
   req.set_pubkey(pkey)
   req.sign(pkey, "sha256")
+
+  pkey_buffer = io.BytesIO()
+  pkey_buffer.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
+  pkey_buffer.seek(0)
+
   req_buffer = io.BytesIO()
   req_buffer.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
   req_buffer.seek(0)
-  return req_buffer
+  return (pkey_buffer, req_buffer)
 
 class CertsException(Exception):
   pass

@@ -33,14 +33,16 @@ class TestCerts(unittest.TestCase):
     self.assertRaises(certs.InvalidCertificateRequest, certs.sign_req, self.ca_crt_file, self.ca_key_file, bad_req, None)
 
   def test_sign_req(self):
-    req_file = certs.create_req('user')
+    key_file, req_file = certs.create_req('user')
     cert_file = certs.sign_req(self.ca_crt_file, self.ca_key_file, req_file, 'cluster')
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_file.read())
     self.assertEqual(cert.get_subject().organizationName, 'user')
     self.assertEqual(cert.get_subject().organizationalUnitName, 'cluster')
 
-  def test_create_req_with_user(self):
-    req_file = certs.create_req('user')
+  def test_create_req(self):
+    key_file, req_file = certs.create_req('user')
+    self.assertTrue(key_file)
+    self.assertTrue(req_file)
     req = crypto.load_certificate_request(crypto.FILETYPE_PEM, req_file.read())
     self.assertEqual(req.get_subject().organizationName, 'user')
     self.assertFalse(req.get_subject().organizationalUnitName)

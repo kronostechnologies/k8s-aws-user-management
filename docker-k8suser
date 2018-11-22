@@ -1,0 +1,23 @@
+#!/bin/bash
+
+VERSION='latest'
+
+if ! docker image inspect "kronostechnologies/k8s-aws-user-management:${VERSION}" &> /dev/null; then
+  docker pull "kronostechnologies/k8s-aws-user-management:${VERSION}"
+fi
+
+declare -a FLAGS=( --rm --read-only )
+
+if [[ -d "${HOME}/.aws" ]]; then
+  FLAGS+=( -v "${HOME}/.aws":/root/.aws )
+fi
+
+if [[ -t 1 ]]; then
+  FLAGS+=( --tty )
+fi
+
+if [[ -n "${AWS_PROFILE}" ]]; then
+  FLAGS+=( -e AWS_PROFILE="${AWS_PROFILE}" )
+fi
+
+docker run "${FLAGS[@]}" "kronostechnologies/k8s-aws-user-management:${VERSION}" "$@"
