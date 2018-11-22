@@ -17,7 +17,7 @@ def __download_file(bucket_name, pattern):
   try:
     s3.meta.client.head_bucket(Bucket=bucket_name)
   except botocore.exceptions.ClientError as e:
-    raise BucketNotFound(bucket_name)
+    raise BucketNotFound("Bucket '{0}' does not exists".format(bucket_name))
 
   bucket = s3.Bucket(bucket_name)
   regex = re.compile(pattern)
@@ -28,17 +28,15 @@ def __download_file(bucket_name, pattern):
       s3_file.seek(0)
       return s3_file
 
-  raise S3FileNotFound(pattern)
+  raise S3FileNotFound("No file were found matching the pattern '{0}'".format(pattern))
 
 class S3Exception(Exception):
   pass
 
 class BucketNotFound(S3Exception):
-  def __init__(self, bucket):
-    self.message = "Bucket {0} does not exists".format(bucket)
-    self.bucket = bucket
+  def __init__(self, message):
+    self.message = message
 
 class S3FileNotFound(S3Exception):
-  def __init__(self, pattern):
-    self.message = "No file were found matching the pattern '{0}'".format(pattern)
-    self.pattern = pattern
+  def __init__(self, message):
+    self.message = message 
