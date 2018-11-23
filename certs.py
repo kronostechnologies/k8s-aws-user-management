@@ -2,6 +2,15 @@ from OpenSSL import crypto
 import datetime
 import random
 import io
+import string
+
+def get_subject_from_req(req_file):
+  try:
+    req = crypto.load_certificate_request(crypto.FILETYPE_PEM, req_file.read())
+  except crypto.Error as e:
+    raise InvalidCertificateRequest("Invalid certificate request: {0}".format(str(e)))
+
+  return req.get_subject()
 
 def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
   try:
@@ -20,6 +29,7 @@ def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
     raise InvalidCertificateRequest("Invalid certificate request: {0}".format(str(e)))
 
   req.get_subject().organizationalUnitName = cluster
+  req.get_subject().organizationName = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(20))
 
   cert = crypto.X509()
   cert.set_serial_number(random.getrandbits(64))
@@ -33,28 +43,6 @@ def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
   cert_buffer.write(crypto.dump_certificate(crypto.FILETYPE_PEM, cert))
   cert_buffer.seek(0)
   return cert_buffer
-
-def create_req(username):
-  pkey = crypto.PKey()
-  pkey.generate_key(crypto.TYPE_RSA, 4096)
-  
-  req = crypto.X509Req()
-  req.get_subject().countryName = "CA"
-  req.get_subject().stateOrProvinceName = "QC"
-  req.get_subject().localityName = "Quebec"
-  req.get_subject().organizationName = username
-  req.get_subject().commonName = username
-  req.set_pubkey(pkey)
-  req.sign(pkey, "sha256")
-
-  pkey_buffer = io.BytesIO()
-  pkey_buffer.write(crypto.dump_privatekey(crypto.FILETYPE_PEM, pkey))
-  pkey_buffer.seek(0)
-
-  req_buffer = io.BytesIO()
-  req_buffer.write(crypto.dump_certificate_request(crypto.FILETYPE_PEM, req))
-  req_buffer.seek(0)
-  return (pkey_buffer, req_buffer)
 
 class CertsException(Exception):
   pass

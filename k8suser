@@ -11,13 +11,6 @@ import tempfile
 import s3
 import certs
 
-def req(args):
-  username = args.USERNAME
-
-  key, req = certs.create_req(username)
-  print(req.read().decode('utf8'))
-  print(key.read().decode('utf8'))
-
 def ca(args):
   ca_parser.print_help()
 
@@ -34,21 +27,14 @@ def ca_sign(args):
   elif os.path.isfile(req_parameter):
     req_file = open(req_parameter, 'r')
 
-  try:
-    key_file = s3.download_key_file(bucket, cluster)
-    cert_file = s3.download_cert_file(bucket, cluster)
-    cert = certs.sign_req(cert_file, key_file, req_file, cluster)
-    print(cert.read().decode('utf8'))
-  except (certs.InvalidCertificateRequest, s3.BucketNotFound, s3.S3FileNotFound) as e:
-    raise e
+  key_file = s3.download_key_file(bucket, cluster)
+  cert_file = s3.download_cert_file(bucket, cluster)
+  cert = certs.sign_req(cert_file, key_file, req_file, cluster)
+  print(cert.read().decode('utf8'))
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="AWS Kubernetes user management certificate")
   subparsers = parser.add_subparsers()
-  
-  req_parser = subparsers.add_parser('req', help='Certificate request commands')
-  req_parser.set_defaults(func=req)
-  req_parser.add_argument('USERNAME', help='The username for your certificate request')
   
   ca_parser = subparsers.add_parser('ca', help='Certificate authority related commands')
   ca_parser.set_defaults(func=ca)
