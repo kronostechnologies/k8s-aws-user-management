@@ -19,13 +19,6 @@ For production:
 ./docker-k8suser -h
 ```
 
-### Certificate Requests
-Certificate request can be generated for a user as follow :
-```
-./docker-k8suser req $USER
-```
-Usually, this command would be run by a user that wants an access to your kubernetes cluster.
-
 ### Certificate Requests Signing
 The command below will sign the user certificate request and output the signed certificate on stdout.
 ```
