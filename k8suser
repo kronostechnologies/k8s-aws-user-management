@@ -12,26 +12,31 @@ import tempfile
 import s3
 import certs
 
-def ca(args):
-  ca_parser.print_help()
+def subject(args):
+  cert_parameter = args.CERT
+  part = args.part
 
-def ca_sign(args):
+  cert_file = __read_file_from_command_line(cert_parameter)
+  cert_subject = certs.get_cert_subject(cert_file)
+
+  if part is not None:
+    if hasattr(cert_subject, part):
+      output =  getattr(cert_subject, part)
+    else:
+      raise ValueError("Part '{0}' is invalid or is not found in certificate subject".format(part))
+  else:
+    output = cert_subject
+
+  print(output)
+
+def sign(args):
   bucket = args.BUCKET
   cluster = args.CLUSTER
   req_parameter = args.REQ
   ca_cert = args.ca_cert
   ca_key = args.ca_key
 
-  if req_parameter == 'stdin':
-    if select.select([sys.stdin,],[],[],0.0)[0]:
-      req_file = sys.stdin
-    else:
-      raise ValueError('There is not data on stdin')
-  elif os.path.isfile(req_parameter):
-    req_file = open(req_parameter, 'r')
-  else:
-    req_file = io.BytesIO(bytes(req_parameter, 'utf8'))
-    req_file.seek(0)
+  req_file = __read_file_from_command_line(req_parameter)
   
   if ca_cert is not None:
     cert_file = open(ca_cert, 'r')
@@ -47,20 +52,37 @@ def ca_sign(args):
 
   print(cert.read().decode('utf8'))
 
+def __read_file_from_command_line(param):
+  if param == 'stdin':
+    if select.select([sys.stdin,],[],[],0.0)[0]:
+      cert_file = sys.stdin
+    else:
+      raise ValueError('There is not data on stdin')
+  elif os.path.isfile(param):
+    cert_file = open(param, 'r')
+  else:  
+    cert_file = io.BytesIO(bytes(param, 'utf8'))
+    cert_file.seek(0)
+
+  return cert_file
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description="AWS Kubernetes user management certificate")
   subparsers = parser.add_subparsers()
   
-  ca_parser = subparsers.add_parser('ca', help='Certificate authority related commands')
-  ca_parser.set_defaults(func=ca)
-  ca_subparsers = ca_parser.add_subparsers()
-  ca_sign_parser = ca_subparsers.add_parser('sign', help='Certificate authority signing related commands')
-  ca_sign_parser.set_defaults(func=ca_sign)
-  ca_sign_parser.add_argument('BUCKET', help='The S3 bucket containing cluster information')
-  ca_sign_parser.add_argument('CLUSTER', help='Cluster name for which you want to sign the certificate against')
-  ca_sign_parser.add_argument('REQ', help='Certificate request file. Pass -- for stdin')
-  ca_sign_parser.add_argument('--ca-cert', help='Path to a certificate authority public certificate')
-  ca_sign_parser.add_argument('--ca-key', help='Path to a certificate authority private key')
+  sign_parser = subparsers.add_parser('sign', help='Sign a certificate request with the certificate authority found the in given S3 bucket for the given cluster')
+  sign_parser.set_defaults(func=sign)
+  sign_parser.add_argument('BUCKET', help='The S3 bucket containing cluster information')
+  sign_parser.add_argument('CLUSTER', help='Cluster name for which you want to sign the certificate against')
+  sign_parser.add_argument('REQ', help='Certificate request file. Pass -- for stdin')
+  sign_parser.add_argument('--ca-cert', help='Path to a certificate authority certificate')
+  sign_parser.add_argument('--ca-key', help='Path to a certificate authority private key')
+
+  subject_parser = subparsers.add_parser('subject', help='Sign a certificate request with the certificate authority found the in given S3 bucket for the given cluster')
+  subject_parser.set_defaults(func=subject)
+  subject_parser.add_argument('CERT', help='The certificate for which we want subject information')
+  subject_parser.add_argument('--part', help='Parts of the subject you want information')
+  
 
   args = parser.parse_args()
   if hasattr(args, 'func'):
