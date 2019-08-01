@@ -1,14 +1,7 @@
-FROM debian:latest
+FROM python:3.7.4-slim-buster
 WORKDIR /code
-ADD https://bootstrap.pypa.io/get-pip.py get-pip.py
-RUN apt update && apt install -y \
-        python3 \
-        && \
-    python3 ./get-pip.py && \
-    rm -rf /var/lib/apt/lists/* get-pip.py
-
-COPY requirements.txt .
-RUN pip install -r requirements.txt
 
 COPY . .
+RUN pip install -r requirements.txt
+
 ENTRYPOINT ["/code/k8suser"]
