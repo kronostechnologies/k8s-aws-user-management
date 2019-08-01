@@ -41,6 +41,12 @@ class TestCerts(unittest.TestCase):
     cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_file.read())
     self.assertEqual(cert.get_subject().commonName, 'user')
     self.assertEqual(cert.get_subject().organizationalUnitName, 'cluster')
+    self.assertFalse(cert.get_subject().organizationName)
+
+  def test_sign_req_with_group(self):
+    cert_file = certs.sign_req(self.ca_crt_file, self.ca_key_file, self.user_csr, 'cluster', 'group')
+    cert = crypto.load_certificate(crypto.FILETYPE_PEM, cert_file.read())
+    self.assertEqual(cert.get_subject().organizationName, 'group')
 
 if __name__ == '__main__':
   unittest.main()

@@ -33,6 +33,7 @@ def sign(args):
   bucket = args.BUCKET
   cluster = args.CLUSTER
   req_parameter = args.REQ
+  group = args.group
   ca_cert = args.ca_cert
   ca_key = args.ca_key
 
@@ -48,7 +49,7 @@ def sign(args):
   else:
     key_file = s3.download_key_file(bucket, cluster)
 
-  cert = certs.sign_req(cert_file, key_file, req_file, cluster)
+  cert = certs.sign_req(cert_file, key_file, req_file, cluster, group)
 
   print(cert.read().decode('utf8'))
 
@@ -77,6 +78,7 @@ if __name__ == '__main__':
   sign_parser.add_argument('REQ', help='Certificate request file. Pass -- for stdin')
   sign_parser.add_argument('--ca-cert', help='Path to a certificate authority certificate')
   sign_parser.add_argument('--ca-key', help='Path to a certificate authority private key')
+  sign_parser.add_argument('--group', help='Add an organisation (O) subject to the resulting certificate ')
 
   subject_parser = subparsers.add_parser('subject', help='Sign a certificate request with the certificate authority found the in given S3 bucket for the given cluster')
   subject_parser.set_defaults(func=subject)

@@ -11,7 +11,7 @@ def get_cert_subject(cert_file):
     raise InvalidCertificateAuthorityCertificate("Invalid certificate public key: {0}".format(str(e)))
   return cert.get_subject()
 
-def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
+def sign_req(ca_crt_file, ca_key_file, req_file, cluster, group = None):
   try:
     ca_pub = crypto.load_certificate(crypto.FILETYPE_PEM, ca_crt_file.read())
   except crypto.Error as e:
@@ -28,6 +28,8 @@ def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
     raise InvalidCertificateRequest("Invalid certificate request: {0}".format(str(e)))
 
   req.get_subject().organizationalUnitName = cluster
+  if group is not None:
+    req.get_subject().organizationName = group
 
   cert = crypto.X509()
   cert.set_serial_number(random.getrandbits(64))
