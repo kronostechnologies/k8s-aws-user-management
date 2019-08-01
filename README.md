@@ -30,9 +30,9 @@ This will automatically download the certificate authtority and it's private key
 
 The `s3-bucket-name` must be the bucket name containing your kops' kubernetes state; `kubernetes-cluster-name` is the name of your cluster. To sum it up, you should be able to reach your state via this s3 url : `s3://s3-bucket-name/kubernetes-cluster-name`.
 
-The resulting certificat will have this has it's subject where groupid is a randomly generated ID that will represent one user.
+The resulting certificat will have these subjects:
 ```
-CN:username, OU:clustername, O:groupid
+CN:username, OU:clustername
 ```
 
 ## Test

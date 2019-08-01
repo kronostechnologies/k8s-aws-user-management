@@ -28,7 +28,6 @@ def sign_req(ca_crt_file, ca_key_file, req_file, cluster):
     raise InvalidCertificateRequest("Invalid certificate request: {0}".format(str(e)))
 
   req.get_subject().organizationalUnitName = cluster
-  req.get_subject().organizationName = ''.join(random.SystemRandom().choice(string.ascii_uppercase + string.digits) for _ in range(20))
 
   cert = crypto.X509()
   cert.set_serial_number(random.getrandbits(64))
